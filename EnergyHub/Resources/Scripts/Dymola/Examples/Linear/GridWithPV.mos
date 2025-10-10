@@ -1,4 +1,4 @@
-simulateModel("EnergyHub.Examples.Linear.GridWithPV", stopTime=86400, method="cvode", tolerance=1e-06, resultFile="GridWithPV");
+simulateModel("EnergyHub.Examples.Linear.GridWithPV", startTime=18399600, stopTime=18482400, method="cvode", tolerance=1e-06, resultFile="GridWithPV");
 createPlot(id=1, position={15, 10, 816, 650}, y={"PHea.y", "PDhw.y", "PCoo.y"}, range={0.0, 400.0, -500000.0, 5000000.0}, erase=false, grid=true, subPlot=101, colors={{28,108,200}, {238,46,47}, {0,140,72}}, timeUnit="d");
 createPlot(id=1, position={15, 10, 816, 650}, y={"PEle.y", "pv.P"}, range={0.0, 400.0, -1000000.0, 7000000.0}, grid=true, subPlot=201, colors={{28,108,200}, {238,46,47}}, timeUnit="d", displayUnits={"", "W"});
 createPlot(id=1, position={15, 10, 816, 650}, y={"EGriBuy.y", "EGriSel.y"}, range={0.0, 400.0, -200000000000000.0, 1.4E+15}, erase=false, grid=true, subPlot=102, colors={{28,108,200}, {238,46,47}}, timeUnit="d");

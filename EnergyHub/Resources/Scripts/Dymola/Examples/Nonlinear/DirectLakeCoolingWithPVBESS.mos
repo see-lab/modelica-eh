@@ -1,4 +1,4 @@
-simulateModel("EnergyHub.Examples.Nonlinear.DirectLakeCoolingWithPVBESS", stopTime=86400, method="cvode", tolerance=1e-06, resultFile="DirectLakeCoolingWithPVBESS");
+simulateModel("EnergyHub.Examples.Nonlinear.DirectLakeCoolingWithPVBESS", startTime=18399600, stopTime=18482400, method="cvode", tolerance=1e-06, resultFile="DirectLakeCoolingWithPVBESS");
 createPlot(id=2, position={564, 122, 358, 350}, y={"nPV"}, range={0.0, 1.0, 4000.0, 6000.0}, erase=false, grid=true, filename="DirectLakeCoolingWithPVBESS.mat", subPlot=101, colors={{28,108,200}}, timeUnit="d");
 createPlot(id=2, position={564, 122, 358, 350}, y={"EBatMax"}, range={0.0, 1.0, 8000.0, 12000.0}, erase=false, grid=true, subPlot=102, colors={{28,108,200}}, timeUnit="d", displayUnits={"kW.h"});
 createPlot(id=1, position={15, 10, 816, 650}, y={"hea.P", "dhw.P", "coo.P"}, range={0.0, 1.0, -50000.0, 400000.0}, erase=false, grid=true, subPlot=101, colors={{28,108,200}, {238,46,47}, {0,140,72}}, timeUnit="d", displayUnits={"W", "W", "W"});

@@ -1,6 +1,6 @@
 within EnergyHub.Examples.Data;
 record FilePaths "Record of paths to externally referenced files"
-  parameter String filNam= "modelica://EnergyHub/Resources/Data/January1.mos"
+  parameter String filNam= "modelica://EnergyHub/Resources/Data/August1.mos"
     "Library path of the file with input data as time series";
   parameter String weaFilNam= "modelica://EnergyHub/Resources/weatherdata/FRA_Lyon.074810_IWEC.mos"
     "Library path of the weather file";
