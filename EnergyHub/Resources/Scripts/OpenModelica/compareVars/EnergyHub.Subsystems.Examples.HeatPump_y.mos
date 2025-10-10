@@ -1,0 +1,7 @@
+compareVars :=
+  {
+    "heaPum.P",
+    "heaPum.heaPum.QCon_flow",
+    "senTem.T",
+    "sou.T"
+  };

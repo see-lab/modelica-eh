@@ -1,9 +1,5 @@
 ﻿// Simulate
-simulateModel("EnergyHub.Examples.Linear.PVandBESS",
-  stopTime=86400
-  method="Cvode",
-  tolerance=1e-06,
-  resultFile="PVandBESS");
+simulateModel("EnergyHub.Examples.Linear.PVandBESS", stopTime=86400, method="Cvode", tolerance=1e-06, resultFile="PVandBESS");
 // Plot
 createPlot(id=2, position={564, 122, 358, 350}, y={"nPV"}, range={0.0, 400.0, 8000.0, 12000.0}, grid=true, subPlot=101, colors={{28,108,200}}, timeUnit="d", displayUnits={"1"});
 createPlot(id=2, position={564, 122, 358, 350}, y={"EBatMax"}, range={0.0, 400.0, 8000.0, 12000.0}, grid=true, subPlot=102, colors={{28,108,200}}, timeUnit="d", displayUnits={"kW.h"});

@@ -1,9 +1,5 @@
 ﻿// Simulate
-simulateModel(
-  "EnergyHub.Subsystems.Examples.HeatPump_y",
-  stopTime=86400,
-  tolerance=1e-06,
-  resultFile="HeatPump_y");
+simulateModel("EnergyHub.Subsystems.Examples.HeatPump_y", stopTime=86400, tolerance=1e-06, resultFile="HeatPump_y");
 // Plot
 createPlot(id=1, position={15, 15, 641, 499}, y={"heaPum.P", "heaPum.heaPum.QCon_flow"}, range={0.0, 90000.0, -200.0, 1200.0}, grid=true, filename="HeatPump_y.mat", subPlot=101, colors={{28,108,200}, {238,46,47}}, timeUnit="s", displayUnits={"W", "W"});
 createPlot(id=1, position={15, 15, 641, 499}, y={"senTem.T", "sou.T"}, range={0.0, 90000.0, 0.0, 25.0}, grid=true, subPlot=102, colors={{238,46,47}, {28,108,200}}, timeUnit="s", displayUnits={"degC", "degC"});

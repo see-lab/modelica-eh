@@ -1,10 +1,5 @@
 ﻿// Simulate
-simulateModel(
-  "EnergyHub.Examples.Nonlinear.GridWithPV",
-  stopTime=86400,
-  method="Cvode",
-  tolerance=1e-06,
-  resultFile="GridWithPV");
+simulateModel("EnergyHub.Examples.Nonlinear.GridWithPV", stopTime=86400, method="Cvode", tolerance=1e-06, resultFile="GridWithPV");
 // Plot
 createPlot(id=1, position={7, -2, 816, 602}, y={"hea.P", "dhw.P", "coo.P"}, range={0.0, 1.0, -100000.0, 800000.0}, erase=false, grid=true, subPlot=101, colors={{28,108,200}, {238,46,47}, {0,140,72}}, timeUnit="d", displayUnits={"W", "W", "W"});
 createPlot(id=1, position={7, 10, 816, 602}, y={"PEle.y", "pv.P"}, range={0.0, 1.0, -500000.0, 4500000.0}, grid=true, subPlot=201, colors={{28,108,200}, {238,46,47}}, timeUnit="d", displayUnits={"", "W"});

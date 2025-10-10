@@ -1,0 +1,10 @@
+compareVars :=
+  {
+    "hea.P",
+    "dhw.P",
+    "coo.P",
+    "PEle.y",
+    "EGriBuy.y",
+    "EGriSel.y",
+    "preCos_MEur.y"
+  };

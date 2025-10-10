@@ -1,9 +1,4 @@
-simulateModel(
-  "EnergyHub.Examples.Nonlinear.DirectLakeCoolingGridOnly",
-  stopTime=86400,
-  method="cvode",
-  tolerance=1e-06,
-  resultFile="DirectLakeCoolingGridOnly");
+simulateModel("EnergyHub.Examples.Nonlinear.DirectLakeCoolingGridOnly", stopTime=86400, method="cvode", tolerance=1e-06, resultFile="DirectLakeCoolingGridOnly");
 createPlot(id=1, position={15, 10, 816, 650}, y={"hea.P", "dhw.P", "coo.P"}, range={0.0, 10000.0, -200000.0, 1800000.0}, grid=true, subPlot=101, colors={{28,108,200}, {238,46,47}, {0,140,72}}, timeUnit="d");
 createPlot(id=1, position={15, 10, 816, 650}, y={"PEle.y"}, range={0.0, 10000.0, 0.0, 5000000.0}, grid=true, subPlot=201, colors={{28,108,200}}, timeUnit="d");
 createPlot(id=1, position={15, 10, 816, 650}, y={"EGriBuy.y", "EGriSel.y"}, range={0.0, 10000.0, -200000000000000.0, 1.4E+15}, grid=true, subPlot=102, colors={{28,108,200}, {238,46,47}}, timeUnit="d");
