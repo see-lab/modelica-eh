@@ -78,6 +78,7 @@ Buildings/Resources/src/fluid/heatpumps/calibration/doc/build/doctrees
 # VS Code
 #########################################
 .vscode
+.venv
 
 # Spawn temporary directories
 #########################################
