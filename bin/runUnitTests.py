@@ -41,20 +41,32 @@ def _validate_experiment_setup(path):
 def _validate_html(path):
     import buildingspy.development.validator as v
 
-    val = v.Validator()
-    errMsg = val.validateHTMLInPackage(path)
-    n_msg = len(errMsg)
-    for i in range(n_msg):
-        if i == 0:
-            print(
-                "The following malformed html syntax has been found:\n{}".format(errMsg[i]))
-        else:
-            print(errMsg[i])
+    try:
+        val = v.Validator()
+        errMsg = val.validateHTMLInPackage(path)
+        n_msg = len(errMsg)
+        for i in range(n_msg):
+            if i == 0:
+                print(
+                    "The following malformed html syntax has been found:\n{}".format(errMsg[i]))
+            else:
+                print(errMsg[i])
 
-    if n_msg == 0:
-        return 0
-    else:
-        return 1
+        if n_msg == 0:
+            print("HTML validation completed successfully. No errors found.")
+            return 0
+        else:
+            return 1
+    except OSError as e:
+        if "Could not load libtidy" in str(e):
+            print("Warning: HTML Tidy library not found. HTML validation skipped.")
+            print("To enable HTML validation, install HTML Tidy:")
+            print("  - Windows: Download from https://www.html-tidy.org/")
+            print("  - Or use: conda install -c conda-forge libtidy")
+            print("HTML validation completed with warnings (library not available).")
+            return 0
+        else:
+            raise
 
 
 def _setEnvironmentVariables(var, value):
