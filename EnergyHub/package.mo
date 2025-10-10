@@ -57,10 +57,19 @@ Modelcia Buildings Library</a> and aims to use the same general modeling
 structure and practices as detailed in <a href=\"https://simulationresearch.lbl.gov/modelica/userGuide/bestPractice.html\">
 Best Practices</a>.
 </p>
+<h4>Tool Compatibility</h4>
+<p>
+These models have have been tested with Dymola 2025x and OpenModelica 1.25.0.
+</p>
 <h4>Model Developers</h4>
 <ul>
- <li>Kathryn Hinkelman, University of Vermont</li>
- <li>Malihe Davari, University of Vermont</li>
+ <li>Kathryn Hinkelman, SEE Lab, University of Vermont (kathryn.hinkelman@uvm.edu)</li>
+ <li>Malihe Davari, SEE Lab, University of Vermont</li>
+</ul>
+<h4>Collaborators</h4>
+<ul>
+ <li>Jaume Fitó de la Cruz, LOICE Laboratory, Université Savoie Mont Blanc</li>
+ <li>Julien Ramousse, LOICE Laboratory, Université Savoie Mont Blanc</li>
 </ul>
 <h4>References</h4>
 <p>
