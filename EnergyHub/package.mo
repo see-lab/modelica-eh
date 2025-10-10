@@ -58,12 +58,10 @@ structure and practices as detailed in <a href=\"https://simulationresearch.lbl.
 Best Practices</a>.
 </p>
 <h4>Model Developers</h4>
-<p>
- <ul>
- <li>Kathryn Hinkelman, University of Vermont
- <li>Malihe Davari, University of Vermont
- </ul>
-</p>
+<ul>
+ <li>Kathryn Hinkelman, University of Vermont</li>
+ <li>Malihe Davari, University of Vermont</li>
+</ul>
 <h4>References</h4>
 <p>
 [To be completed after peer review.]
