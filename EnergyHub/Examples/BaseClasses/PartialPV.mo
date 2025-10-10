@@ -1,0 +1,38 @@
+within EnergyHub.Examples.BaseClasses;
+partial model PartialPV "Adds the PV blocks to partial grid"
+  extends EnergyHub.Examples.BaseClasses.PartialGrid(
+    CCap=capExOnePV*nPV,
+    PGen(y=pv.P));
+  Buildings.Electrical.AC.ThreePhasesBalanced.Sources.PVSimpleOriented pv(
+    pf=1,
+    eta_DCAC=1,
+    A=PV_surface*nPV,
+    fAct=1,
+    eta=PV_eff,
+    til=0,
+    azi=0,
+    V_nominal=V_nominal)
+    "Solar pannel with orientation"
+    annotation (Placement(transformation(extent={{-60,40},{-40,60}})));
+equation
+  connect(pv.weaBus, weaBus) annotation (Line(
+      points={{-50,59},{-50,100},{0,100}},
+      color={255,204,51},
+      thickness=0.5), Text(
+      string="%second",
+      index=1,
+      extent={{6,3},{6,3}},
+      horizontalAlignment=TextAlignment.Left));
+  connect(pv.terminal, loa.terminal) annotation (Line(points={{-60,50},{-70,50},
+          {-70,70},{-20,70}}, color={0,120,120}));
+  annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+        coordinateSystem(preserveAspectRatio=false)),
+    Documentation(revisions="<html>
+<ul>
+<li>
+October 10, 2025 by Kathryn Hinkelman:<br/>
+First implementation.
+</li>
+</ul>
+</html>"));
+end PartialPV;

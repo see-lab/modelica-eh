@@ -1,0 +1,14 @@
+﻿// Simulate
+simulateModel(
+  "EnergyHub.Examples.Nonlinear.GridWithPV",
+  stopTime=86400,
+  method="Cvode",
+  tolerance=1e-06,
+  resultFile="GridWithPV");
+// Plot
+createPlot(id=1, position={7, -2, 816, 602}, y={"hea.P", "dhw.P", "coo.P"}, range={0.0, 1.0, -100000.0, 800000.0}, erase=false, grid=true, subPlot=101, colors={{28,108,200}, {238,46,47}, {0,140,72}}, timeUnit="d", displayUnits={"W", "W", "W"});
+createPlot(id=1, position={7, 10, 816, 602}, y={"PEle.y", "pv.P"}, range={0.0, 1.0, -500000.0, 4500000.0}, grid=true, subPlot=201, colors={{28,108,200}, {238,46,47}}, timeUnit="d", displayUnits={"", "W"});
+createPlot(id=1, position={7, -2, 816, 602}, y={"EGriBuy.y", "EGriSel.y"}, range={0.0, 1.0, -50000000000.0, 200000000000.0}, erase=false, grid=true, subPlot=102, colors={{28,108,200}, {238,46,47}}, timeUnit="d");
+createPlot(id=1, position={15, 10, 816, 650}, y={"preCos_MEur.y"}, range={0.0, 400, -10.0, 60.0}, grid=true, subPlot=202, colors={{28,108,200}}, timeUnit="d");
+createPlot(id=2, position={389, 154, 358, 209}, y={"nPV"}, range={0.0, 800000000.0, 2100.0, 2700.0}, erase=false, grid=true, colors={{238,46,47}}, timeUnit="s");
+

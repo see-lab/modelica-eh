@@ -1,0 +1,6 @@
+﻿// Simulate
+simulateModel("EnergyHub.Controls.Examples.BatteryControl",stopTime=120,method="Cvode",tolerance=1e-06,resultFile="BatteryControl");
+// Plot commands
+createPlot(id=1, position={55, 55, 605, 482}, y={"con.PGen", "con.PLoa", "con.PGen", "con.PLoa"}, range={0.0, 120.0, -500.0, 1500.0}, grid=true, subPlot=101, colors={{28,108,200}, {238,46,47}, {28,108,200}, {238,46,47}}, timeUnit="s", displayUnits={"W", "W", "W", "W"});
+createPlot(id=1, position={55, 55, 605, 482}, y={"con.soc", "con.soc"}, range={0.0, 120.0, -0.5, 1.5}, grid=true, subPlot=102, colors={{28,108,200}, {28,108,200}}, timeUnit="s");
+createPlot(id=1, position={55, 55, 605, 482}, y={"con.PBat", "con.PBat"}, range={0.0, 120.0, -500.0, 1500.0}, grid=true, subPlot=103, colors={{28,108,200}, {28,108,200}}, timeUnit="s", displayUnits={"W", "W"});

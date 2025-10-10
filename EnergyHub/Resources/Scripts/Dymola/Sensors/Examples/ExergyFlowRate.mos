@@ -1,0 +1,9 @@
+﻿// Simulate
+simulateModel("EnergyHub.Sensors.Examples.ExergyFlowRate",stopTime=160,method="Cvode",tolerance=1e-06,resultFile="ExergyFlowRate");
+// Plot 
+createPlot(id=1, position={159, 14, 520, 479}, y={"souWat.m_flow_in", "souAir.m_flow_in"}, range={0.0, 160.0, -0.5, 1.5}, erase=false, grid=true, filename="ExergyFlowRate.mat", subPlot=101, colors={{28,108,200}, {238,46,47}}, timeUnit="s", displayUnits={"kg/s", "kg/s"});
+createPlot(id=1, position={159, 14, 520, 479}, y={"souWat.T_in", "souAir.T_in", "XFloAir.T_0"}, range={0.0, 160.0, 10.0, 50.0}, erase=false, grid=true, subPlot=102, colors={{28,108,200}, {238,46,47}, {0,140,72}}, timeUnit="s", displayUnits={"degC", "degC", "degC"});
+createPlot(id=1, position={159, 14, 520, 479}, y={"XFloWat.X_flow", "XFloAir.X_flow"}, range={0.0, 160.0, -1000.0, 3000.0}, erase=false, grid=true, subPlot=103, colors={{28,108,200}, {238,46,47}}, timeUnit="s", displayUnits={"W", "W"});
+createPlot(id=2, position={711, 52, 494, 323}, y={"XFloWat.port_a.p", "XFloAir.port_a.p", "XFloAir.p_0"}, range={0.0, 160.0, 0.5, 3.5}, erase=false, grid=true, colors={{28,108,200}, {238,46,47}, {0,140,72}}, timeUnit="s", displayUnits={"bar", "bar", "bar"});
+
+
