@@ -1,0 +1,11 @@
+compareVars :=
+  {
+    "con.PGen",
+    "con.PLoa",
+    "con.PGen",
+    "con.PLoa",
+    "con.soc",
+    "con.soc",
+    "con.PBat",
+    "con.PBat"
+  };
