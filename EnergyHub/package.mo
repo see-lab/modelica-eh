@@ -53,7 +53,7 @@ repository for designing and optimizing EH configurations.
 <p>
 Many models are based on models from the
 <a href=\"modelica://Buildings\">
-Modelcia Buildings Library</a> and aims to use the same general modeling
+Modelica Buildings Library</a> and aims to use the same general modeling
 structure and practices as detailed in <a href=\"https://simulationresearch.lbl.gov/modelica/userGuide/bestPractice.html\">
 Best Practices</a>.
 </p>
@@ -71,9 +71,9 @@ These models have have been tested with Dymola 2025x and OpenModelica 1.25.0.
  <li>Jaume Fitó de la Cruz, LOICE Laboratory, Université Savoie Mont Blanc</li>
  <li>Julien Ramousse, LOICE Laboratory, Université Savoie Mont Blanc</li>
 </ul>
-<h4>References</h4>
+<h4>Citation</h4>
 <p>
-[To be completed after peer review.]
+[The paper is current under review. A citation will be posted once available.]
 </p>
 </html>"));
 end EnergyHub;
