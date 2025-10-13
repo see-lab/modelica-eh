@@ -7,8 +7,8 @@ use.
 
 
 Many models are based on models from the
-[Modelica Buildings Library](https://simulationresearch.lbl.gov/modelica/)
-and aims to use the same general modeling
+[Modelica Buildings Library](https://simulationresearch.lbl.gov/modelica/).
+We aim to use the same general modeling
 structure and practices as detailed in [the MBL Best Practices](https://simulationresearch.lbl.gov/modelica/userGuide/bestPractice.html).
 
 ## Model Developers
