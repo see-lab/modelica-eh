@@ -12,7 +12,7 @@ We aim to use the same general modeling
 structure and practices as detailed in [the MBL Best Practices](https://simulationresearch.lbl.gov/modelica/userGuide/bestPractice.html).
 
 ## Model Developers
-- Kathryn Hinkelman, University of Vermont ([contact info](https://www.theseelab.org/team/kathryn-hinkelman)).
+- Kathryn Hinkelman, University of Vermont ([contact info](https://www.theseelab.org/team/kathryn-hinkelman))
 - Malihe Davari, University of Vermont
 
 ## Collaborators
