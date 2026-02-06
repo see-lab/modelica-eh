@@ -1,0 +1,14 @@
+compareVars :=
+  {
+    "nPV",
+    "EBatMax",
+    "hea.P",
+    "dhw.P",
+    "coo.P",
+    "PEle.y",
+    "pv.P",
+    "bat.P",
+    "EGriBuy.y",
+    "EGriSel.y",
+    "preCos_MEur.y"
+  };

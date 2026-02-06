@@ -141,6 +141,37 @@ model DirectLakeCoolingWithPVBESS
   Modelica.Blocks.Continuous.Integrator XLakRet(y_start=1E-10)
     "Exergy returned to the lake"
     annotation (Placement(transformation(extent={{16,-24},{26,-14}})));
+  Modelica.Blocks.Sources.RealExpression QDotBuy(y=pipWat.m_flow*(pipWat.port_b.h_outflow
+         - pipWatRet.port_b.h_outflow))
+    "Heat flow rate coming into the system"
+    annotation (Placement(transformation(extent={{136,-44},{156,-24}})));
+  Modelica.Blocks.Continuous.Integrator QBuy(y_start=1E-10)
+    "Thermal energy into the system boundary"
+    annotation (Placement(transformation(extent={{174,-44},{194,-24}})));
+  Modelica.Blocks.Continuous.Integrator QDemand_integration(y_start=1E-10)
+    "converting thermal demand to energy"
+    annotation (Placement(transformation(extent={{176,-74},{196,-54}})));
+  Modelica.Blocks.Sources.RealExpression QDotDemBld(y=yHea.u + yDhw.u + yCoo.u)
+    "Thermal demand (Heating, DHW) on the Building side (Heating HP condesor)"
+    annotation (Placement(transformation(extent={{136,-74},{156,-54}})));
+  Modelica.Blocks.Math.Division ratSsrThBld
+    "Ratio of thermal energy imported from the external provider to thermal demands (heating and dhw)."
+    annotation (Placement(transformation(extent={{214,-50},{234,-30}})));
+  Modelica.Blocks.Sources.RealExpression QDotDemDEN(y=QDotBuy.y + pipLak.port_a.m_flow
+        *(pipRetLak.port_b.h_outflow - pipLak.port_b.h_outflow))
+                      "Thermal demand (Heating, DHW) on the DEN side."
+    annotation (Placement(transformation(extent={{136,-98},{156,-78}})));
+  Modelica.Blocks.Continuous.Integrator QDemand_integration1(y_start=1E-10)
+    "converting thermal demand to energy"
+    annotation (Placement(transformation(extent={{200,-98},{220,-78}})));
+  Modelica.Blocks.Math.Division ratSsrThDen
+    "Ratio of thermal energy imported from the external provider to thermal demands (heating and dhw)."
+    annotation (Placement(transformation(extent={{236,-92},{256,-72}})));
+  Modelica.Blocks.Sources.RealExpression ssr_T_eneDEN(y=1 - ratSsrThDen.y)
+    "Self-sufficiency ratio of the thermal system (energy based) based on energy on DEN side"
+    annotation (Placement(transformation(extent={{268,-98},{288,-78}})));
+
+
   final parameter Modelica.Units.SI.Length dhWat(
     fixed=false,
     start=0.05,
@@ -151,6 +182,7 @@ model DirectLakeCoolingWithPVBESS
     start=0.05,
     min=0.01)
     "Hydraulic diameter of the lake pipe";
+
 equation
   connect(souDom.ports[1], pipWat.port_a)
     annotation (Line(points={{-100,-60},{-80,-60}}, color={0,127,255}));
@@ -204,10 +236,34 @@ equation
     annotation (Line(points={{8,-21.2},{8,-19},{15,-19}}, color={0,0,127}));
   connect(XLakSup_flow.X_flow, XLakSup.u)
     annotation (Line(points={{8,8.8},{8,21},{13,21}}, color={0,0,127}));
+  connect(QDotBuy.y, QBuy.u)
+    annotation (Line(points={{157,-34},{172,-34}}, color={0,0,127}));
+  connect(QDotDemBld.y, QDemand_integration.u)
+    annotation (Line(points={{157,-64},{174,-64}}, color={0,0,127}));
+  connect(QDotDemDEN.y, QDemand_integration1.u)
+    annotation (Line(points={{157,-88},{198,-88}}, color={0,0,127}));
+  connect(QBuy.y, ratSsrThDen.u1) annotation (Line(points={{195,-34},{198,-34},
+          {198,-46},{206,-46},{206,-76},{234,-76}}, color={0,0,127}));
+  connect(QDemand_integration1.y, ratSsrThDen.u2)
+    annotation (Line(points={{221,-88},{234,-88}}, color={0,0,127}));
+  connect(QBuy.y, ratSsrThBld.u1)
+    annotation (Line(points={{195,-34},{212,-34}}, color={0,0,127}));
+  connect(QDemand_integration.y, ratSsrThBld.u2) annotation (Line(points={{197,
+          -64},{202,-64},{202,-46},{212,-46}}, color={0,0,127}));
   annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
         coordinateSystem(preserveAspectRatio=false, extent={{-120,-100},{360,120}})),
     experiment(
-      StopTime=86400,
+      StopTime=31536000,
+      Tolerance=1e-06,
+      __Dymola_Algorithm="Cvode"),
+    __Dymola_Commands(file=
+          "modelica://MES/Resources/Scripts/Dymola/Examples/Nonlinear/DirectLakeCoolingWithPVBESS.mos"
+        "Simulate and plot"),
+              Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+        coordinateSystem(preserveAspectRatio=false, extent={{-120,-100},{360,120}})),
+    experiment(
+      StartTime=18399600,
+      StopTime=18482400,
       Tolerance=1e-06,
       __Dymola_Algorithm="Cvode"),
     __Dymola_Commands(file=

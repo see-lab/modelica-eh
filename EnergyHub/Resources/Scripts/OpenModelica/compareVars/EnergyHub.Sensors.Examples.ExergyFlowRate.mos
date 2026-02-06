@@ -1,0 +1,13 @@
+compareVars :=
+  {
+    "souWat.m_flow_in",
+    "souAir.m_flow_in",
+    "souWat.T_in",
+    "souAir.T_in",
+    "XFloAir.T_0",
+    "XFloWat.X_flow",
+    "XFloAir.X_flow",
+    "XFloWat.port_a.p",
+    "XFloAir.port_a.p",
+    "XFloAir.p_0"
+  };
