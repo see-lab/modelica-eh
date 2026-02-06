@@ -87,3 +87,5 @@ Buildings/spawn-*
 
 # Other folders
 MES/help
+.venv
+local/
