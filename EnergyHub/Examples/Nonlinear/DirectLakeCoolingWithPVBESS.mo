@@ -183,6 +183,75 @@ model DirectLakeCoolingWithPVBESS
     min=0.01)
     "Hydraulic diameter of the lake pipe";
 
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+// Addig dead state information for exergy calculations in HP:
+  // Heating
+  //DES side
+  Modelica.Units.SI.Power X_dot_hp_hea_DES "Net exergy flow change for heating HP on DES side";
+  Modelica.Units.SI.Power X_dot_sou_hea_DES "Exergy flow change for heating HP on DES souply side",
+   X_dot_ret_hea_DES "Exergy flow change for heating HP on DES return side";
+  // Building side
+  Modelica.Units.SI.Power X_dot_hp_hea_bld "Net exergy flow change for heating HP on BLD side";
+  Modelica.Units.SI.Power X_dot_sou_hea_bld "Exergy flow change for heating HP on BLD souply side",
+   X_dot_ret_hea_bld "Exergy flow change for heating HP on BLD return side";
+
+  parameter Modelica.Units.SI.Temperature T0HP=294.15 "Dead state (e.g., Ground Temp 20C)";
+  parameter Modelica.Units.SI.Pressure P0HP=101325  "Dead state Pressure (1 atm)";
+  Modelica.Units.SI.SpecificEnthalpy h_heaHP_sou_DES "Heating HP inlet enthalpy on DES side",
+   h_heaHP_ret_DES "Heating HP outlet enthalpy on DES side",h_heaHP_sou_bld "Heating HP inlet enthalpy on BLD side",
+    h_heaHP_ret_bld "Heating HP outlet enthalpy on BLD side";
+  Modelica.Units.SI.SpecificEntropy s_heaHP_sou_DES "Heating HP inlet entropy on DES side",
+   s_heaHP_ret_DES "Heating HP outlet entropy on DES side",s_heaHP_sou_bld "Heating HP inlet entropy on BLD side",
+   s_heaHP_ret_bld "Heating HP outlet entropy on BLD side";
+//------------------------------------------------------------------------------
+  //DHW
+  //DES side
+  Modelica.Units.SI.Power X_dot_hp_dhw_DES "Net exergy flow change";
+  Modelica.Units.SI.Power X_dot_sou_dhw_DES, X_dot_ret_dhw_DES;
+  // Building side
+  Modelica.Units.SI.Power X_dot_hp_dhw_bld "Net exergy flow change";
+  Modelica.Units.SI.Power X_dot_sou_dhw_bld, X_dot_ret_dhw_bld;
+
+  Medium.ThermodynamicState state0HP "Dead state";
+  Modelica.Units.SI.SpecificEnthalpy h0HP, h_dhwHP_sou_DES, h_dhwHP_ret_DES,h_dhwHP_sou_bld, h_dhwHP_ret_bld;
+  Modelica.Units.SI.SpecificEntropy s0HP, s_dhwHP_sou_DES, s_dhwHP_ret_DES,s_dhwHP_sou_bld, s_dhwHP_ret_bld;
+//------------------------------------------------------------------------------
+  // Cooling
+  Modelica.Units.SI.Power X_dot_HX_coo_bld "Net exergy flow change ";
+  Modelica.Units.SI.Power X_dot_sou_coo_bld "Exergy of inlet flow to HX on the Building side",
+  X_dot_ret_coo_bld "Exergy of outlet flow to HX on the Building side";
+
+  Modelica.Units.SI.SpecificEnthalpy h_cooHX_sou_bld "Cooling inlet flow enthalpy on BLD side",
+   h_cooHX_ret_bld "Cooling outlet flow enthalpy on BLD side";
+  Modelica.Units.SI.SpecificEntropy s_cooHX_sou_bld "Cooling inlet flow entropy on BLD side",
+  s_cooHX_ret_bld "Cooling outlet flow enropy on BLD side";
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+  Modelica.Blocks.Sources.RealExpression XDotThDem(y=X_dot_hp_hea_bld +
+        X_dot_hp_dhw_bld + X_dot_HX_coo_bld)
+    "Exergy thermal demand (Heating, DHW, and Cooling) on the building side"
+    annotation (Placement(transformation(extent={{122,98},{142,118}})));
+  Modelica.Blocks.Continuous.Integrator XThDem(y_start=1E-10)
+    "Total thermal exergy delivered to buildings"
+    annotation (Placement(transformation(extent={{154,96},{174,116}})));
+  Modelica.Blocks.Sources.RealExpression XDotElDem(y=PEle.u)
+    "Electrical exergy demand"
+    annotation (Placement(transformation(extent={{122,72},{142,92}})));
+  Modelica.Blocks.Continuous.Integrator XElDem(y_start=1E-10)
+    "Total exergy delivered to the load"
+    annotation (Placement(transformation(extent={{146,66},{166,86}})));
+  Modelica.Blocks.Sources.RealExpression XDotThBuy(y=X_dot_hp_hea_DES +
+        X_dot_hp_dhw_DES)
+    "Exergy purchased from outside thermal resources ( WDN)"
+    annotation (Placement(transformation(extent={{122,44},{142,64}})));
+  Modelica.Blocks.Continuous.Integrator XThBuy(y_start=1E-10)
+    "Total thermal exergy purchased from external resources"
+    annotation (Placement(transformation(extent={{158,42},{178,62}})));
+  Modelica.Blocks.Sources.RealExpression SSR_X(y=1 - (XThBuy.y + EGriBuy.y)/(
+        XThDem.y + XElDem.y)) "Exergy self-sufficiency ratio"
+    annotation (Placement(transformation(extent={{300,96},{320,116}})));
 equation
   connect(souDom.ports[1], pipWat.port_a)
     annotation (Line(points={{-100,-60},{-80,-60}}, color={0,127,255}));
@@ -250,6 +319,82 @@ equation
     annotation (Line(points={{195,-34},{212,-34}}, color={0,0,127}));
   connect(QDemand_integration.y, ratSsrThBld.u2) annotation (Line(points={{197,
           -64},{202,-64},{202,-46},{212,-46}}, color={0,0,127}));
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+// Equations for Exergy indicator:
+   // Define dead state properties:
+    state0HP=hea.MediumDis.setState_pT( P0HP,T0HP);
+    h0HP = hea.MediumDis.specificEnthalpy(state0HP);
+    s0HP = hea.MediumDis.specificEntropy(state0HP);
+//------------------------------------------------------------------------------
+   // Heating
+   // calculating the exergy for DES
+   // Source side
+    h_heaHP_sou_DES= hea.heaPum.port_a2.h_outflow; // Enthalpy of source (actual)
+    s_heaHP_sou_DES = hea.MediumDis.specificEntropy(hea.MediumDis.setState_phX(hea.heaPum.port_a2.p, h_heaHP_sou_DES, hea.heaPum.port_a2.Xi_outflow));
+    X_dot_sou_hea_DES = hea.heaPum.port_a2.m_flow * ((h_heaHP_sou_DES - h0HP) - T0HP * (s_heaHP_sou_DES - s0HP));
+   // Return side
+    h_heaHP_ret_DES = hea.heaPum.port_b2.h_outflow;
+    s_heaHP_ret_DES = hea.MediumDis.specificEntropy(hea.MediumDis.setState_phX(hea.heaPum.port_b2.p, h_heaHP_ret_DES, hea.heaPum.port_b2.Xi_outflow));
+    X_dot_ret_hea_DES = hea.heaPum.port_b2.m_flow * ((h_heaHP_ret_DES - h0HP) - T0HP * (s_heaHP_ret_DES - s0HP));
+    X_dot_hp_hea_DES = abs(X_dot_sou_hea_DES + X_dot_ret_hea_DES); // Final summation of exergy flows
+
+    // calculating the exergy for Building side
+    // Source side
+    h_heaHP_sou_bld= hea.heaPum.port_a1.h_outflow; // Enthalpy of source building side (actual)
+    s_heaHP_sou_bld = hea.MediumLoa.specificEntropy(hea.MediumLoa.setState_phX(hea.heaPum.port_a1.p, h_heaHP_sou_bld, hea.heaPum.port_a1.Xi_outflow));
+    X_dot_sou_hea_bld = hea.heaPum.port_a1.m_flow * ((h_heaHP_sou_bld - h0HP) - T0HP * (s_heaHP_sou_bld - s0HP));
+   // Return side
+    h_heaHP_ret_bld = hea.heaPum.port_b1.h_outflow;
+    s_heaHP_ret_bld = hea.MediumLoa.specificEntropy(hea.MediumLoa.setState_phX(hea.heaPum.port_b1.p, h_heaHP_ret_bld, hea.heaPum.port_b1.Xi_outflow));
+    X_dot_ret_hea_bld = hea.heaPum.port_b1.m_flow * ((h_heaHP_ret_bld - h0HP) - T0HP * (s_heaHP_ret_bld - s0HP));
+    X_dot_hp_hea_bld = abs(X_dot_sou_hea_bld + X_dot_ret_hea_bld); // Final summation of exergy flows
+
+//------------------------------------------------------------------------------
+    // DHW
+   // calculating the exergy for DES
+   // Source side
+    h_dhwHP_sou_DES= dhw.heaPum.port_a2.h_outflow; // Enthalpy of source (actual)
+    s_dhwHP_sou_DES = dhw.MediumDis.specificEntropy(dhw.MediumDis.setState_phX(dhw.heaPum.port_a2.p, h_dhwHP_sou_DES, dhw.heaPum.port_a2.Xi_outflow));
+    X_dot_sou_dhw_DES = dhw.heaPum.port_a2.m_flow * ((h_dhwHP_sou_DES - h0HP) - T0HP * (s_dhwHP_sou_DES - s0HP));
+   // Return side
+    h_dhwHP_ret_DES = dhw.heaPum.port_b2.h_outflow;
+    s_dhwHP_ret_DES = dhw.MediumDis.specificEntropy(dhw.MediumDis.setState_phX(dhw.heaPum.port_b2.p, h_dhwHP_ret_DES, dhw.heaPum.port_b2.Xi_outflow));
+    X_dot_ret_dhw_DES = dhw.heaPum.port_b2.m_flow * ((h_dhwHP_ret_DES - h0HP) - T0HP * (s_dhwHP_ret_DES - s0HP));
+    X_dot_hp_dhw_DES = abs(X_dot_sou_dhw_DES + X_dot_ret_dhw_DES); // Final summation of exergy flows
+
+    // calculating the exergy for Building side
+    // Source side
+    h_dhwHP_sou_bld= dhw.heaPum.port_a1.h_outflow; // Enthalpy of source building side (actual)
+    s_dhwHP_sou_bld = dhw.MediumLoa.specificEntropy(dhw.MediumLoa.setState_phX(dhw.heaPum.port_a1.p, h_dhwHP_sou_bld, dhw.heaPum.port_a1.Xi_outflow));
+    X_dot_sou_dhw_bld = dhw.heaPum.port_a1.m_flow * ((h_dhwHP_sou_bld - h0HP) - T0HP * (s_dhwHP_sou_bld - s0HP));
+   // Return side
+    h_dhwHP_ret_bld = dhw.heaPum.port_b1.h_outflow;
+    s_dhwHP_ret_bld = dhw.MediumLoa.specificEntropy(dhw.MediumLoa.setState_phX(dhw.heaPum.port_b1.p, h_dhwHP_ret_bld, dhw.heaPum.port_b1.Xi_outflow));
+    X_dot_ret_dhw_bld = dhw.heaPum.port_b1.m_flow * ((h_dhwHP_ret_bld - h0HP) - T0HP * (s_dhwHP_ret_bld - s0HP));
+    X_dot_hp_dhw_bld = abs(X_dot_sou_dhw_bld + X_dot_ret_dhw_bld); // Final summation of exergy flows
+
+//------------------------------------------------------------------------------
+  // Cooling
+  // calculating the exergy for Building side
+    // Source side
+    h_cooHX_sou_bld= coo.hexChi.port_a1.h_outflow; // Enthalpy of source building side (actual)
+    s_cooHX_sou_bld = coo.MediumLoa.specificEntropy(coo.MediumLoa.setState_phX(coo.hexChi.port_a1.p, h_cooHX_sou_bld, coo.hexChi.port_a1.Xi_outflow));
+    X_dot_sou_coo_bld = coo.hexChi.port_a1.m_flow * ((h_cooHX_sou_bld - h0HP) - T0HP * (s_cooHX_sou_bld - s0HP));
+   // Return side
+    h_cooHX_ret_bld = coo.hexChi.port_b1.h_outflow;
+    s_cooHX_ret_bld = coo.MediumLoa.specificEntropy(coo.MediumLoa.setState_phX(coo.hexChi.port_b1.p, h_cooHX_ret_bld, coo.hexChi.port_b1.Xi_outflow));
+    X_dot_ret_coo_bld = coo.hexChi.port_b1.m_flow * ((h_cooHX_ret_bld - h0HP) - T0HP * (s_cooHX_ret_bld - s0HP));
+    X_dot_HX_coo_bld = abs(X_dot_sou_coo_bld + X_dot_ret_coo_bld); // Final summation of exergy flows
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+  connect(XDotThDem.y, XThDem.u)
+    annotation (Line(points={{143,108},{144,106},{152,106}}, color={0,0,127}));
+  connect(XDotElDem.y, XElDem.u)
+    annotation (Line(points={{143,82},{144,82},{144,76}}, color={0,0,127}));
+  connect(XDotThBuy.y, XThBuy.u)
+    annotation (Line(points={{143,54},{144,52},{156,52}}, color={0,0,127}));
   annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
         coordinateSystem(preserveAspectRatio=false, extent={{-120,-100},{360,120}})),
     experiment(
