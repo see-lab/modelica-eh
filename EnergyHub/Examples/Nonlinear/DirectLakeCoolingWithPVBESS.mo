@@ -38,7 +38,7 @@ model DirectLakeCoolingWithPVBESS
   extends EnergyHub.Examples.BaseClasses.KeyPerformanceIndicators(
     PGriNet(y=gri.P.real),
     PLoa(y=-sumLoa.y),
-    PGen(y=pv.P - (hea.P + dhw.P + coo.P + conBat.PBat)),
+    PGen(y=pv.P),
     CCap=capExOnePV*nPV + capExBat*EBatMax + capExPum*mDis_flow_nominal,
     break connect(ELoa.y, ratEneImpLoa.u2));
   package Medium = Buildings.Media.Water
@@ -253,20 +253,14 @@ model DirectLakeCoolingWithPVBESS
   Modelica.Blocks.Sources.RealExpression SSR_X(y=1 - (XThBuy.y + EGriBuy.y)/(
         XThDem.y + XElDem.y)) "Exergy self-sufficiency ratio"
     annotation (Placement(transformation(extent={{300,96},{320,116}})));
-  Modelica.Blocks.Sources.RealExpression PPV(y=pv.P)
-    "Generated on-site power by PV"
-    annotation (Placement(transformation(extent={{264,-100},{284,-80}})));
-  Modelica.Blocks.Continuous.Integrator EPV(y_start=1E-10)
-    "Energy generated on site by PV"
-    annotation (Placement(transformation(extent={{332,-70},{352,-50}})));
   Modelica.Blocks.Sources.RealExpression PBat(y=conBat.PBat)
     "Power exchange with BESS (positive charging, negative discharging)"
     annotation (Placement(transformation(extent={{298,-98},{318,-78}})));
   Modelica.Blocks.Continuous.Integrator EBat(y_start=1E-10)
     "Energy exchange with BESS"
     annotation (Placement(transformation(extent={{332,-98},{352,-78}})));
-  Modelica.Blocks.Sources.RealExpression SSR_K(y=EPV.y*(1 - (EGriSel.y + EBat.y)
-        /(EPV.y + EGriBuy.y))/ELoa.y)
+  Modelica.Blocks.Sources.RealExpression SSR_K(y=EGen.y*(1 - (EGriSel.y + EBat.y)
+        /(EGen.y + EGriBuy.y))/ELoa.y)
     "Electrical self-sufficiency ratio using an indicator"
     annotation (Placement(transformation(extent={{300,38},{320,58}})));
 equation
@@ -414,8 +408,6 @@ equation
     annotation (Line(points={{143,54},{144,52},{156,52}}, color={0,0,127}));
   connect(XElDem.y, ratEneImpLoa.u2) annotation (Line(points={{167,76},{246,76},
           {246,96},{258,96}}, color={0,0,127}));
-  connect(PPV.y, EPV.u) annotation (Line(points={{285,-90},{290,-90},{290,-60},
-          {330,-60}}, color={0,0,127}));
   connect(PBat.y, EBat.u)
     annotation (Line(points={{319,-88},{330,-88}}, color={0,0,127}));
   annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(

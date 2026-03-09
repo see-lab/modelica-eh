@@ -7,7 +7,7 @@ preferredView="info",
 version="0.1",
 versionDate="2025-10-10",
 uses(Modelica(version="4.0.0"),
-  Buildings(version="11.0.0")),
+  Buildings(version="11.1.0")),
     Icon(graphics={
         Rectangle(
           extent={{0,-10},{64,-70}},
