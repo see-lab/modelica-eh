@@ -34,6 +34,13 @@ equation
         coordinateSystem(preserveAspectRatio=false)),
     Documentation(info="<html>
 <p>This is a basic battery controller with the following logic:</p>
+<ul>
+<li>If the onsite power generation exceeds the power demand and the battery has available capacity (SOC is less than the maximum value), the surplus power is stored in the battery. </li>
+<li>However, if the battery SOC is full or the surplus power exceeds the battery&rsquo;s maximum charging rate, the excess power is injected into the main grid. </li>
+<li>When onsite power generation is lower than the demand, the battery serves as the primary power source (while SOC is less than the minimum value); if the demand still exceeds the available power, additional electricity is purchased from the grid. </li>
+<li>The maximal battery charging/discharging rate is limited by user-specified parameter, with excess power being sold to/purchased from the grid, when present. </li>
+<li>Lastly, we implement a small deadband of 10^-6yW between the on-site power generation and the load to avoid rapid switching of the battery&apos;s charging/discharging state. </li>
+</ul>
 </html>", revisions="<html>
 <ul>
 <li>
