@@ -261,11 +261,6 @@ equation
         "Simulate and plot"),
               Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
         coordinateSystem(preserveAspectRatio=false, extent={{-120,-100},{360,120}})),
-    experiment(
-      StartTime=18399600,
-      StopTime=18482400,
-      Tolerance=1e-06,
-      __Dymola_Algorithm="Cvode"),
     __Dymola_Commands(file=
           "modelica://EnergyHub/Resources/Scripts/Dymola/Examples/Nonlinear/DirectLakeCoolingWithPVBESS.mos"
         "Simulate and plot"),
