@@ -22,7 +22,7 @@ model DirectLakeCoolingWithPVBESS
       TBldSup_nominal=TCooWatSup_nominal,
       dT_nominal=dT_nominal,
       dpLoa_nominal=dpLoa_nominal,
-      dpDis_nominal=dpDis_nominal + pipLak.dp_nominal,
+      dpDis_nominal=dpDis_nominal + pipLak.length*dp_length_nominal,
       redeclare package MediumLoa = Medium,
       redeclare package MediumDis = Medium),
     redeclare EnergyHub.Subsystems.HeatPump_y hea(
@@ -34,7 +34,8 @@ model DirectLakeCoolingWithPVBESS
       dpLoa_nominal=dpLoa_nominal,
       dpDis_nominal=dpDis_nominal + pipWat.dp_nominal,
       redeclare package MediumLoa = Medium,
-      redeclare package MediumDis = Medium));
+      redeclare package MediumDis = Medium),
+    loaInp(smoothness=Modelica.Blocks.Types.Smoothness.ModifiedContinuousDerivative));
   extends EnergyHub.Examples.BaseClasses.KeyPerformanceIndicators(
     PGriNet(y=gri.P.real),
     PLoa(y=-sumLoa.y),
@@ -78,18 +79,24 @@ model DirectLakeCoolingWithPVBESS
     nPorts=1)
     "Lake sink"
     annotation (Placement(transformation(extent={{-82,-36},{-70,-24}})));
-  Buildings.DHC.Networks.Pipes.PipeAutosize pipLak(
+  Buildings.Fluid.FixedResistances.PlugFlowPipe
+                                            pipLak(
     redeclare package Medium = Medium,
-    m_flow_nominal=mLak_flow_nominal,
-    dh(fixed=true)=dhLak,
-    dp_length_nominal=dp_length_nominal,
-    length=lLak)
+    m_flow_nominal=coo.mDis_flow_nominal,
+    dh(fixed=true) = dhLak,
+    length=lLak,
+    dIns=0.05,
+    kIns=0.03,
+    fac=1)
     "Supply pipe from the lake"
     annotation (Placement(transformation(extent={{-60,-10},{-40,10}})));
-  Buildings.Fluid.FixedResistances.LosslessPipe pipRetLak(
+  Buildings.Fluid.FixedResistances.PlugFlowPipe pipRetLak(
     redeclare package Medium = Medium,
     m_flow_nominal=mLak_flow_nominal,
-    show_T=true)
+    dh(fixed=true) = dhLak,
+    length=lLak,
+    dIns=0.05,
+    kIns=0.03)
     "Return pipe from the lake"
     annotation (Placement(transformation(extent={{-40,-40},{-60,-20}})));
   EnergyHub.Sensors.ExergyFlowRate XLakSup_flow(redeclare package Medium =
@@ -178,10 +185,7 @@ model DirectLakeCoolingWithPVBESS
     start=0.05,
     min=0.01)
     "Hydraulic diameter of the water pipe";
-  final parameter Modelica.Units.SI.Length dhLak(
-    fixed=false,
-    start=0.05,
-    min=0.01)
+  final parameter Modelica.Units.SI.Length dhLak= 0.25
     "Hydraulic diameter of the lake pipe";
 
 //------------------------------------------------------------------------------
@@ -263,6 +267,9 @@ model DirectLakeCoolingWithPVBESS
         /(EGen.y + EGriBuy.y))/ELoa.y)
     "Electrical self-sufficiency ratio using an indicator"
     annotation (Placement(transformation(extent={{300,38},{320,58}})));
+  Modelica.Thermal.HeatTransfer.Sources.FixedTemperature groTem(T=(10 + 273.15)
+         + 273.15)
+    annotation (Placement(transformation(extent={{-118,-18},{-98,2}})));
 equation
   connect(souDom.ports[1], pipWat.port_a)
     annotation (Line(points={{-100,-60},{-80,-60}}, color={0,127,255}));
@@ -410,6 +417,10 @@ equation
           {246,96},{258,96}}, color={0,0,127}));
   connect(PBat.y, EBat.u)
     annotation (Line(points={{319,-88},{330,-88}}, color={0,0,127}));
+  connect(pipLak.heatPort, groTem.port) annotation (Line(points={{-50,10},{-92,
+          10},{-92,-8},{-98,-8}}, color={191,0,0}));
+  connect(pipRetLak.heatPort, groTem.port) annotation (Line(points={{-50,-20},{
+          -92,-20},{-92,-8},{-98,-8}}, color={191,0,0}));
   annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
         coordinateSystem(preserveAspectRatio=false, extent={{-120,-100},{360,120}})),
     experiment(
