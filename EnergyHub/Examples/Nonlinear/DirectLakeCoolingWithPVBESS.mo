@@ -263,13 +263,23 @@ model DirectLakeCoolingWithPVBESS
   Modelica.Blocks.Continuous.Integrator EBat(y_start=1E-10)
     "Energy exchange with BESS"
     annotation (Placement(transformation(extent={{332,-98},{352,-78}})));
-  Modelica.Blocks.Sources.RealExpression SSR_K(y=EGen.y*(1 - (EGriSel.y + EBat.y)
-        /(EGen.y + EGriBuy.y))/ELoa.y)
+  Modelica.Blocks.Sources.RealExpression SSR_K(y=(EGen.y - K_coe.y*(EGriSel.y
+         + EBat.y))/ELoa.y)
     "Electrical self-sufficiency ratio using an indicator"
     annotation (Placement(transformation(extent={{300,38},{320,58}})));
-  Modelica.Thermal.HeatTransfer.Sources.FixedTemperature groTem(T=(10 + 273.15)
-         + 273.15)
+  Modelica.Thermal.HeatTransfer.Sources.FixedTemperature groTem(T=283.15)
     annotation (Placement(transformation(extent={{-118,-18},{-98,2}})));
+  Modelica.Blocks.Sources.RealExpression K_coe(y=EGen.y/(EGen.y + EGriBuy.y))
+    "Electrical self-sufficiency ratio coefficient"
+    annotation (Placement(transformation(extent={{274,38},{294,58}})));
+  Modelica.Thermal.HeatTransfer.Sources.PrescribedTemperature Soil_Tem
+    annotation (Placement(transformation(extent={{-118,10},{-98,30}})));
+  Modelica.Blocks.Sources.Sine Yearly_sine(
+    amplitude=8,
+    f=1/31536000,
+    phase(displayUnit="deg") = 0.26179938779915,
+    offset=288.15) "Making the temperature variable during the year."
+    annotation (Placement(transformation(extent={{-118,40},{-98,60}})));
 equation
   connect(souDom.ports[1], pipWat.port_a)
     annotation (Line(points={{-100,-60},{-80,-60}}, color={0,127,255}));
@@ -417,10 +427,12 @@ equation
           {246,96},{258,96}}, color={0,0,127}));
   connect(PBat.y, EBat.u)
     annotation (Line(points={{319,-88},{330,-88}}, color={0,0,127}));
-  connect(pipLak.heatPort, groTem.port) annotation (Line(points={{-50,10},{-92,
-          10},{-92,-8},{-98,-8}}, color={191,0,0}));
-  connect(pipRetLak.heatPort, groTem.port) annotation (Line(points={{-50,-20},{
-          -92,-20},{-92,-8},{-98,-8}}, color={191,0,0}));
+  connect(Yearly_sine.y, Soil_Tem.T) annotation (Line(points={{-97,50},{-92,50},
+          {-92,66},{-128,66},{-128,20},{-120,20}}, color={0,0,127}));
+  connect(pipRetLak.heatPort, Soil_Tem.port) annotation (Line(points={{-50,-20},
+          {-92,-20},{-92,20},{-98,20}}, color={191,0,0}));
+  connect(pipLak.heatPort, Soil_Tem.port) annotation (Line(points={{-50,10},{
+          -92,10},{-92,20},{-98,20}}, color={191,0,0}));
   annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
         coordinateSystem(preserveAspectRatio=false, extent={{-120,-100},{360,120}})),
     experiment(
