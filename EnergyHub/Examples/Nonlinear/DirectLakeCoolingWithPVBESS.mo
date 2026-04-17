@@ -22,7 +22,7 @@ model DirectLakeCoolingWithPVBESS
       TBldSup_nominal=TCooWatSup_nominal,
       dT_nominal=dT_nominal,
       dpLoa_nominal=dpLoa_nominal,
-      dpDis_nominal=dpDis_nominal + pipLak.dp_nominal,
+      dpDis_nominal=dpDis_nominal + pipLak.length*dp_length_nominal,
       redeclare package MediumLoa = Medium,
       redeclare package MediumDis = Medium),
     redeclare EnergyHub.Subsystems.HeatPump_y hea(
@@ -34,12 +34,14 @@ model DirectLakeCoolingWithPVBESS
       dpLoa_nominal=dpLoa_nominal,
       dpDis_nominal=dpDis_nominal + pipWat.dp_nominal,
       redeclare package MediumLoa = Medium,
-      redeclare package MediumDis = Medium));
+      redeclare package MediumDis = Medium),
+    loaInp(smoothness=Modelica.Blocks.Types.Smoothness.ModifiedContinuousDerivative));
   extends EnergyHub.Examples.BaseClasses.KeyPerformanceIndicators(
     PGriNet(y=gri.P.real),
     PLoa(y=-sumLoa.y),
-    PGen(y=0),
-    CCap=capExOnePV*nPV + capExBat*EBatMax + capExPum*mDis_flow_nominal);
+    PGen(y=pv.P),
+    CCap=capExOnePV*nPV + capExBat*EBatMax + capExPum*mDis_flow_nominal,
+    break connect(ELoa.y, ratEneImpLoa.u2));
   package Medium = Buildings.Media.Water
     "Medium model";
   Buildings.Fluid.Sources.Boundary_pT souDom(
@@ -77,18 +79,24 @@ model DirectLakeCoolingWithPVBESS
     nPorts=1)
     "Lake sink"
     annotation (Placement(transformation(extent={{-82,-36},{-70,-24}})));
-  Buildings.DHC.Networks.Pipes.PipeAutosize pipLak(
+  Buildings.Fluid.FixedResistances.PlugFlowPipe
+                                            pipLak(
     redeclare package Medium = Medium,
-    m_flow_nominal=mLak_flow_nominal,
-    dh(fixed=true)=dhLak,
-    dp_length_nominal=dp_length_nominal,
-    length=lLak)
+    m_flow_nominal=coo.mDis_flow_nominal,
+    dh(fixed=true) = dhLak,
+    length=lLak,
+    dIns=0.05,
+    kIns=0.03,
+    fac=1)
     "Supply pipe from the lake"
     annotation (Placement(transformation(extent={{-60,-10},{-40,10}})));
-  Buildings.Fluid.FixedResistances.LosslessPipe pipRetLak(
+  Buildings.Fluid.FixedResistances.PlugFlowPipe pipRetLak(
     redeclare package Medium = Medium,
     m_flow_nominal=mLak_flow_nominal,
-    show_T=true)
+    dh(fixed=true) = dhLak,
+    length=lLak,
+    dIns=0.05,
+    kIns=0.03)
     "Return pipe from the lake"
     annotation (Placement(transformation(extent={{-40,-40},{-60,-20}})));
   EnergyHub.Sensors.ExergyFlowRate XLakSup_flow(redeclare package Medium =
@@ -169,7 +177,7 @@ model DirectLakeCoolingWithPVBESS
     annotation (Placement(transformation(extent={{236,-92},{256,-72}})));
   Modelica.Blocks.Sources.RealExpression ssr_T_eneDEN(y=1 - ratSsrThDen.y)
     "Self-sufficiency ratio of the thermal system (energy based) based on energy on DEN side"
-    annotation (Placement(transformation(extent={{268,-98},{288,-78}})));
+    annotation (Placement(transformation(extent={{300,-14},{320,6}})));
 
 
   final parameter Modelica.Units.SI.Length dhWat(
@@ -177,12 +185,101 @@ model DirectLakeCoolingWithPVBESS
     start=0.05,
     min=0.01)
     "Hydraulic diameter of the water pipe";
-  final parameter Modelica.Units.SI.Length dhLak(
-    fixed=false,
-    start=0.05,
-    min=0.01)
+  final parameter Modelica.Units.SI.Length dhLak= 0.25
     "Hydraulic diameter of the lake pipe";
 
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+// Addig dead state information for exergy calculations in HP:
+  // Heating
+  //DES side
+  Modelica.Units.SI.Power X_dot_hp_hea_DES "Net exergy flow change for heating HP on DES side";
+  Modelica.Units.SI.Power X_dot_sou_hea_DES "Exergy flow change for heating HP on DES souply side",
+   X_dot_ret_hea_DES "Exergy flow change for heating HP on DES return side";
+  // Building side
+  Modelica.Units.SI.Power X_dot_hp_hea_bld "Net exergy flow change for heating HP on BLD side";
+  Modelica.Units.SI.Power X_dot_sou_hea_bld "Exergy flow change for heating HP on BLD souply side",
+   X_dot_ret_hea_bld "Exergy flow change for heating HP on BLD return side";
+
+  parameter Modelica.Units.SI.Temperature T0HP=294.15 "Dead state (e.g., Ground Temp 20C)";
+  parameter Modelica.Units.SI.Pressure P0HP=101325  "Dead state Pressure (1 atm)";
+  Modelica.Units.SI.SpecificEnthalpy h_heaHP_sou_DES "Heating HP inlet enthalpy on DES side",
+   h_heaHP_ret_DES "Heating HP outlet enthalpy on DES side",h_heaHP_sou_bld "Heating HP inlet enthalpy on BLD side",
+    h_heaHP_ret_bld "Heating HP outlet enthalpy on BLD side";
+  Modelica.Units.SI.SpecificEntropy s_heaHP_sou_DES "Heating HP inlet entropy on DES side",
+   s_heaHP_ret_DES "Heating HP outlet entropy on DES side",s_heaHP_sou_bld "Heating HP inlet entropy on BLD side",
+   s_heaHP_ret_bld "Heating HP outlet entropy on BLD side";
+//------------------------------------------------------------------------------
+  //DHW
+  //DES side
+  Modelica.Units.SI.Power X_dot_hp_dhw_DES "Net exergy flow change";
+  Modelica.Units.SI.Power X_dot_sou_dhw_DES, X_dot_ret_dhw_DES;
+  // Building side
+  Modelica.Units.SI.Power X_dot_hp_dhw_bld "Net exergy flow change";
+  Modelica.Units.SI.Power X_dot_sou_dhw_bld, X_dot_ret_dhw_bld;
+
+  Medium.ThermodynamicState state0HP "Dead state";
+  Modelica.Units.SI.SpecificEnthalpy h0HP, h_dhwHP_sou_DES, h_dhwHP_ret_DES,h_dhwHP_sou_bld, h_dhwHP_ret_bld;
+  Modelica.Units.SI.SpecificEntropy s0HP, s_dhwHP_sou_DES, s_dhwHP_ret_DES,s_dhwHP_sou_bld, s_dhwHP_ret_bld;
+//------------------------------------------------------------------------------
+  // Cooling
+  Modelica.Units.SI.Power X_dot_HX_coo_bld "Net exergy flow change ";
+  Modelica.Units.SI.Power X_dot_sou_coo_bld "Exergy of inlet flow to HX on the Building side",
+  X_dot_ret_coo_bld "Exergy of outlet flow to HX on the Building side";
+
+  Modelica.Units.SI.SpecificEnthalpy h_cooHX_sou_bld "Cooling inlet flow enthalpy on BLD side",
+   h_cooHX_ret_bld "Cooling outlet flow enthalpy on BLD side";
+  Modelica.Units.SI.SpecificEntropy s_cooHX_sou_bld "Cooling inlet flow entropy on BLD side",
+  s_cooHX_ret_bld "Cooling outlet flow enropy on BLD side";
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+  Modelica.Blocks.Sources.RealExpression XDotThDem(y=X_dot_hp_hea_bld +
+        X_dot_hp_dhw_bld + X_dot_HX_coo_bld)
+    "Exergy thermal demand (Heating, DHW, and Cooling) on the building side"
+    annotation (Placement(transformation(extent={{122,98},{142,118}})));
+  Modelica.Blocks.Continuous.Integrator XThDem(y_start=1E-10)
+    "Total thermal exergy delivered to buildings"
+    annotation (Placement(transformation(extent={{154,96},{174,116}})));
+  Modelica.Blocks.Sources.RealExpression XDotElDem(y=PEle.u)
+    "Electrical exergy demand"
+    annotation (Placement(transformation(extent={{122,72},{142,92}})));
+  Modelica.Blocks.Continuous.Integrator XElDem(y_start=1E-10)
+    "Total exergy delivered to the load"
+    annotation (Placement(transformation(extent={{146,66},{166,86}})));
+  Modelica.Blocks.Sources.RealExpression XDotThBuy(y=X_dot_hp_hea_DES +
+        X_dot_hp_dhw_DES)
+    "Exergy purchased from outside thermal resources ( WDN)"
+    annotation (Placement(transformation(extent={{122,44},{142,64}})));
+  Modelica.Blocks.Continuous.Integrator XThBuy(y_start=1E-10)
+    "Total thermal exergy purchased from external resources"
+    annotation (Placement(transformation(extent={{158,42},{178,62}})));
+  Modelica.Blocks.Sources.RealExpression SSR_X(y=1 - (XThBuy.y + EGriBuy.y)/(
+        XThDem.y + XElDem.y)) "Exergy self-sufficiency ratio"
+    annotation (Placement(transformation(extent={{300,96},{320,116}})));
+  Modelica.Blocks.Sources.RealExpression PBat(y=conBat.PBat)
+    "Power exchange with BESS (positive charging, negative discharging)"
+    annotation (Placement(transformation(extent={{298,-98},{318,-78}})));
+  Modelica.Blocks.Continuous.Integrator EBat(y_start=1E-10)
+    "Energy exchange with BESS"
+    annotation (Placement(transformation(extent={{332,-98},{352,-78}})));
+  Modelica.Blocks.Sources.RealExpression SSR_K(y=(EGen.y - K_coe.y*(EGriSel.y
+         + EBat.y))/ELoa.y)
+    "Electrical self-sufficiency ratio using an indicator"
+    annotation (Placement(transformation(extent={{300,38},{320,58}})));
+  Modelica.Thermal.HeatTransfer.Sources.FixedTemperature groTem(T=283.15)
+    annotation (Placement(transformation(extent={{-118,-18},{-98,2}})));
+  Modelica.Blocks.Sources.RealExpression K_coe(y=EGen.y/(EGen.y + EGriBuy.y))
+    "Electrical self-sufficiency ratio coefficient"
+    annotation (Placement(transformation(extent={{274,38},{294,58}})));
+  Modelica.Thermal.HeatTransfer.Sources.PrescribedTemperature Soil_Tem
+    annotation (Placement(transformation(extent={{-118,10},{-98,30}})));
+  Modelica.Blocks.Sources.Sine Yearly_sine(
+    amplitude=8,
+    f=1/31536000,
+    phase(displayUnit="deg") = 0.26179938779915,
+    offset=288.15) "Making the temperature variable during the year."
+    annotation (Placement(transformation(extent={{-118,40},{-98,60}})));
 equation
   connect(souDom.ports[1], pipWat.port_a)
     annotation (Line(points={{-100,-60},{-80,-60}}, color={0,127,255}));
@@ -250,19 +347,101 @@ equation
     annotation (Line(points={{195,-34},{212,-34}}, color={0,0,127}));
   connect(QDemand_integration.y, ratSsrThBld.u2) annotation (Line(points={{197,
           -64},{202,-64},{202,-46},{212,-46}}, color={0,0,127}));
-  annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
-        coordinateSystem(preserveAspectRatio=false, extent={{-120,-100},{360,120}})),
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+// Equations for Exergy indicator:
+   // Define dead state properties:
+    state0HP=hea.MediumDis.setState_pT( P0HP,T0HP);
+    h0HP = hea.MediumDis.specificEnthalpy(state0HP);
+    s0HP = hea.MediumDis.specificEntropy(state0HP);
+//------------------------------------------------------------------------------
+   // Heating
+   // calculating the exergy for DES
+   // Source side
+    h_heaHP_sou_DES= hea.heaPum.port_a2.h_outflow; // Enthalpy of source (actual)
+    s_heaHP_sou_DES = hea.MediumDis.specificEntropy(hea.MediumDis.setState_phX(hea.heaPum.port_a2.p, h_heaHP_sou_DES, hea.heaPum.port_a2.Xi_outflow));
+    X_dot_sou_hea_DES = hea.heaPum.port_a2.m_flow * ((h_heaHP_sou_DES - h0HP) - T0HP * (s_heaHP_sou_DES - s0HP));
+   // Return side
+    h_heaHP_ret_DES = hea.heaPum.port_b2.h_outflow;
+    s_heaHP_ret_DES = hea.MediumDis.specificEntropy(hea.MediumDis.setState_phX(hea.heaPum.port_b2.p, h_heaHP_ret_DES, hea.heaPum.port_b2.Xi_outflow));
+    X_dot_ret_hea_DES = hea.heaPum.port_b2.m_flow * ((h_heaHP_ret_DES - h0HP) - T0HP * (s_heaHP_ret_DES - s0HP));
+    X_dot_hp_hea_DES = abs(X_dot_sou_hea_DES + X_dot_ret_hea_DES); // Final summation of exergy flows
+
+    // calculating the exergy for Building side
+    // Source side
+    h_heaHP_sou_bld= hea.heaPum.port_a1.h_outflow; // Enthalpy of source building side (actual)
+    s_heaHP_sou_bld = hea.MediumLoa.specificEntropy(hea.MediumLoa.setState_phX(hea.heaPum.port_a1.p, h_heaHP_sou_bld, hea.heaPum.port_a1.Xi_outflow));
+    X_dot_sou_hea_bld = hea.heaPum.port_a1.m_flow * ((h_heaHP_sou_bld - h0HP) - T0HP * (s_heaHP_sou_bld - s0HP));
+   // Return side
+    h_heaHP_ret_bld = hea.heaPum.port_b1.h_outflow;
+    s_heaHP_ret_bld = hea.MediumLoa.specificEntropy(hea.MediumLoa.setState_phX(hea.heaPum.port_b1.p, h_heaHP_ret_bld, hea.heaPum.port_b1.Xi_outflow));
+    X_dot_ret_hea_bld = hea.heaPum.port_b1.m_flow * ((h_heaHP_ret_bld - h0HP) - T0HP * (s_heaHP_ret_bld - s0HP));
+    X_dot_hp_hea_bld = abs(X_dot_sou_hea_bld + X_dot_ret_hea_bld); // Final summation of exergy flows
+
+//------------------------------------------------------------------------------
+    // DHW
+   // calculating the exergy for DES
+   // Source side
+    h_dhwHP_sou_DES= dhw.heaPum.port_a2.h_outflow; // Enthalpy of source (actual)
+    s_dhwHP_sou_DES = dhw.MediumDis.specificEntropy(dhw.MediumDis.setState_phX(dhw.heaPum.port_a2.p, h_dhwHP_sou_DES, dhw.heaPum.port_a2.Xi_outflow));
+    X_dot_sou_dhw_DES = dhw.heaPum.port_a2.m_flow * ((h_dhwHP_sou_DES - h0HP) - T0HP * (s_dhwHP_sou_DES - s0HP));
+   // Return side
+    h_dhwHP_ret_DES = dhw.heaPum.port_b2.h_outflow;
+    s_dhwHP_ret_DES = dhw.MediumDis.specificEntropy(dhw.MediumDis.setState_phX(dhw.heaPum.port_b2.p, h_dhwHP_ret_DES, dhw.heaPum.port_b2.Xi_outflow));
+    X_dot_ret_dhw_DES = dhw.heaPum.port_b2.m_flow * ((h_dhwHP_ret_DES - h0HP) - T0HP * (s_dhwHP_ret_DES - s0HP));
+    X_dot_hp_dhw_DES = abs(X_dot_sou_dhw_DES + X_dot_ret_dhw_DES); // Final summation of exergy flows
+
+    // calculating the exergy for Building side
+    // Source side
+    h_dhwHP_sou_bld= dhw.heaPum.port_a1.h_outflow; // Enthalpy of source building side (actual)
+    s_dhwHP_sou_bld = dhw.MediumLoa.specificEntropy(dhw.MediumLoa.setState_phX(dhw.heaPum.port_a1.p, h_dhwHP_sou_bld, dhw.heaPum.port_a1.Xi_outflow));
+    X_dot_sou_dhw_bld = dhw.heaPum.port_a1.m_flow * ((h_dhwHP_sou_bld - h0HP) - T0HP * (s_dhwHP_sou_bld - s0HP));
+   // Return side
+    h_dhwHP_ret_bld = dhw.heaPum.port_b1.h_outflow;
+    s_dhwHP_ret_bld = dhw.MediumLoa.specificEntropy(dhw.MediumLoa.setState_phX(dhw.heaPum.port_b1.p, h_dhwHP_ret_bld, dhw.heaPum.port_b1.Xi_outflow));
+    X_dot_ret_dhw_bld = dhw.heaPum.port_b1.m_flow * ((h_dhwHP_ret_bld - h0HP) - T0HP * (s_dhwHP_ret_bld - s0HP));
+    X_dot_hp_dhw_bld = abs(X_dot_sou_dhw_bld + X_dot_ret_dhw_bld); // Final summation of exergy flows
+
+//------------------------------------------------------------------------------
+  // Cooling
+  // calculating the exergy for Building side
+    // Source side
+    h_cooHX_sou_bld= coo.hexChi.port_a1.h_outflow; // Enthalpy of source building side (actual)
+    s_cooHX_sou_bld = coo.MediumLoa.specificEntropy(coo.MediumLoa.setState_phX(coo.hexChi.port_a1.p, h_cooHX_sou_bld, coo.hexChi.port_a1.Xi_outflow));
+    X_dot_sou_coo_bld = coo.hexChi.port_a1.m_flow * ((h_cooHX_sou_bld - h0HP) - T0HP * (s_cooHX_sou_bld - s0HP));
+   // Return side
+    h_cooHX_ret_bld = coo.hexChi.port_b1.h_outflow;
+    s_cooHX_ret_bld = coo.MediumLoa.specificEntropy(coo.MediumLoa.setState_phX(coo.hexChi.port_b1.p, h_cooHX_ret_bld, coo.hexChi.port_b1.Xi_outflow));
+    X_dot_ret_coo_bld = coo.hexChi.port_b1.m_flow * ((h_cooHX_ret_bld - h0HP) - T0HP * (s_cooHX_ret_bld - s0HP));
+    X_dot_HX_coo_bld = abs(X_dot_sou_coo_bld + X_dot_ret_coo_bld); // Final summation of exergy flows
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+  connect(XDotThDem.y, XThDem.u)
+    annotation (Line(points={{143,108},{144,106},{152,106}}, color={0,0,127}));
+  connect(XDotElDem.y, XElDem.u)
+    annotation (Line(points={{143,82},{144,82},{144,76}}, color={0,0,127}));
+  connect(XDotThBuy.y, XThBuy.u)
+    annotation (Line(points={{143,54},{144,52},{156,52}}, color={0,0,127}));
+  connect(XElDem.y, ratEneImpLoa.u2) annotation (Line(points={{167,76},{246,76},
+          {246,96},{258,96}}, color={0,0,127}));
+  connect(PBat.y, EBat.u)
+    annotation (Line(points={{319,-88},{330,-88}}, color={0,0,127}));
+  connect(Yearly_sine.y, Soil_Tem.T) annotation (Line(points={{-97,50},{-92,50},
+          {-92,66},{-128,66},{-128,20},{-120,20}}, color={0,0,127}));
+  connect(pipRetLak.heatPort, Soil_Tem.port) annotation (Line(points={{-50,-20},
+          {-92,-20},{-92,20},{-98,20}}, color={191,0,0}));
+  connect(pipLak.heatPort, Soil_Tem.port) annotation (Line(points={{-50,10},{
+          -92,10},{-92,20},{-98,20}}, color={191,0,0}));
+  annotation (
+    Icon(coordinateSystem(preserveAspectRatio=false)), 
+    Diagram(coordinateSystem(preserveAspectRatio=false, extent={{-120,-100},{360,120}})),
     experiment(
-      StopTime=31536000,
+      StopTime=259200,
       Tolerance=1e-06,
       __Dymola_Algorithm="Cvode"),
     __Dymola_Commands(file=
           "modelica://MES/Resources/Scripts/Dymola/Examples/Nonlinear/DirectLakeCoolingWithPVBESS.mos"
-        "Simulate and plot"),
-              Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
-        coordinateSystem(preserveAspectRatio=false, extent={{-120,-100},{360,120}})),
-    __Dymola_Commands(file=
-          "modelica://EnergyHub/Resources/Scripts/Dymola/Examples/Nonlinear/DirectLakeCoolingWithPVBESS.mos"
         "Simulate and plot"),
     Documentation(revisions="<html>
 <ul>

@@ -1,6 +1,7 @@
 within EnergyHub.Examples.Data;
 record FluidParameters
   "Design parameters for the thermofluid aspects of the case study"
+  parameter Real fac=dp_length_nominal/200 "Friction of lake pipe";
   parameter Integer nCon(min=0)=3 "Number of connected loads in the district model";
   // Heat pumps
   // COP
