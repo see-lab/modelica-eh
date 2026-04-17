@@ -433,24 +433,15 @@ equation
           {-92,-20},{-92,20},{-98,20}}, color={191,0,0}));
   connect(pipLak.heatPort, Soil_Tem.port) annotation (Line(points={{-50,10},{
           -92,10},{-92,20},{-98,20}}, color={191,0,0}));
-  annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
-        coordinateSystem(preserveAspectRatio=false, extent={{-120,-100},{360,120}})),
+  annotation (
+    Icon(coordinateSystem(preserveAspectRatio=false)), 
+    Diagram(coordinateSystem(preserveAspectRatio=false, extent={{-120,-100},{360,120}})),
     experiment(
       StopTime=259200,
       Tolerance=1e-06,
       __Dymola_Algorithm="Cvode"),
     __Dymola_Commands(file=
           "modelica://MES/Resources/Scripts/Dymola/Examples/Nonlinear/DirectLakeCoolingWithPVBESS.mos"
-        "Simulate and plot"),
-              Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
-        coordinateSystem(preserveAspectRatio=false, extent={{-120,-100},{360,120}})),
-    experiment(
-      StartTime=0,
-      StopTime=18482400,
-      Tolerance=1e-06,
-      __Dymola_Algorithm="Cvode"),
-    __Dymola_Commands(file=
-          "modelica://EnergyHub/Resources/Scripts/Dymola/Examples/Nonlinear/DirectLakeCoolingWithPVBESS.mos"
         "Simulate and plot"),
     Documentation(revisions="<html>
 <ul>

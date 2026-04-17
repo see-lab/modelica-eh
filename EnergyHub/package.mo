@@ -73,7 +73,9 @@ These models have have been tested with Dymola 2025x and OpenModelica 1.25.0.
 </ul>
 <h4>Citation</h4>
 <p>
-[The paper is current under review. A citation will be posted once available.]
+
+M. Davari, K. Hinkelman, J. Fitó, and J. Ramousse, “Open-Source Modelica Models for the Optimal Design of Urban and Community Scale Multi-Energy Systems,” in The Twelfth National Conference of IBPSA-USA (SimBuild 2026), Minneapolis, MN, May 2026.
+  
 </p>
 </html>"));
 end EnergyHub;
