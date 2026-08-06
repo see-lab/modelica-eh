@@ -4,8 +4,8 @@ package EnergyHub "Modelica library for the model-based design and
   extends Modelica.Icons.Package;
 annotation (
 preferredView="info",
-version="0.1",
-versionDate="2025-10-10",
+version="1.0.0",
+versionDate="2026-03-18",
 uses(Modelica(version="4.0.0"),
   Buildings(version="11.1.0")),
     Icon(graphics={
