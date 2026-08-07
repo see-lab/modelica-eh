@@ -2,7 +2,7 @@
 
 The Modelica `EnergyHub` (EH) package is a free modeling
 repository for designing and optimizing multi-energy systems and energy hubs. 
-THe package includes both linear and nonlinear formulations for validation and 
+The package includes both linear and nonlinear formulations for validation and 
 use.
 
 
@@ -23,7 +23,7 @@ structure and practices as detailed in [the MBL Best Practices](https://simulati
 This library uses Modelica v4.0.0 and Buildings v11.0.0. 
 
 ## Tool Compatibility
-These models have have been tested with Dymola 2025x and OpenModelica 1.25.0.
+These models have been tested with Dymola 2025x and OpenModelica 1.25.0.
 
 ## Contributions
 You may report any issues with using the [Issues](https://github.com/see-lab/modelica-eh/issues) button.
