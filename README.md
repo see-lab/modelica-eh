@@ -29,3 +29,13 @@ These models have been tested with Dymola 2025x and OpenModelica 1.25.0.
 You may report any issues with using the [Issues](https://github.com/see-lab/modelica-eh/issues) button.
 
 Contributions in the form of [Pull Requests](https://github.com/see-lab/modelica-eh/pulls) are always welcome!
+
+## Acknowledgement
+This material is based upon work supported by the U.S. National Science Foundation
+under Award Nos. ECCS-2433427 and CBET-2501735. 
+Additional support was provided by the University of Vermont Faculty Startup Program.
+
+## Disclaimer
+Any opinions, findings, and conclusions or recommendations expressed in this
+material are those of the author(s) and do not necessarily reflect the views
+of the U.S. National Science Foundation.
